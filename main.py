@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import re
 
 app = Flask(__name__)
@@ -33,10 +33,19 @@ def srt_time_to_lrc_time(srt_time):
     lrc_timestamp = f"[{total_minutes:02}:{int(seconds):02}.{int(milliseconds[:2]):02}]"
     return lrc_timestamp
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/convert', methods=['POST'])
 def convert():
-    data = request.json
-    srt_content = data.get('srt_content', '')
+    srt_content = ''
+    if 'srt_content' in request.form:
+        srt_content = request.form['srt_content']
+    elif 'srt_file' in request.files:
+        srt_file = request.files['srt_file']
+        srt_content = srt_file.read().decode('utf-8')
+
     if not srt_content:
         return jsonify({"error": "No SRT content provided"}), 400
 
@@ -45,4 +54,3 @@ def convert():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
-  
