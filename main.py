@@ -16,7 +16,10 @@ def srt_to_lrc(srt_content):
         text_lines = lines[2:]
 
         # 提取时间
-        start_time, _ = re.match(r'(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})', time_line).groups()
+        match = re.match(r'(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})', time_line)
+        if not match:
+            return None
+        start_time, _ = match.groups()
         lrc_timestamp = srt_time_to_lrc_time(start_time)
 
         # 将字幕文本与时间戳组合
@@ -50,6 +53,9 @@ def convert():
         return jsonify({"error": "No SRT content provided"}), 400
 
     lrc_content = srt_to_lrc(srt_content)
+    if lrc_content is None:
+        return jsonify({"error": "Invalid SRT format"}), 400
+
     return jsonify({"lrc_content": lrc_content})
 
 if __name__ == "__main__":
